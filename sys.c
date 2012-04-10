@@ -49,6 +49,17 @@ const char *sysfs_param_server[] = {
 	NULL,
 };
 
+const char *sysfs_param_range[] = {
+	"1",
+	"254",
+	NULL,
+};
+
+const char *sysfs_param_one_range[] = {
+	"10",
+	NULL,
+};
+
 static void interface_usage(void)
 {
 	printf("Usage: batctl interface [options] [add|del iface(s)] \n");
@@ -315,6 +326,34 @@ void ap_isolation_usage(void)
 	printf(" \t -h print this help\n");
 }
 
+void network_coding_usage(void)
+{
+	printf("Usage: batctl [options] nc status [0|1]\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+void nc_min_tq_usage(void)
+{
+	printf("Usage: batctl [options] nc min_tq [1-254]\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+void nc_hold_usage(void)
+{
+	printf("Usage: batctl [options] nc hold [>10]\n");
+	printf("options:\n");
+	printf("\t -h print this help\n");
+}
+
+void nc_purge_usage(void)
+{
+	printf("Usage: batctl [options] nc purge [>10]\n");
+	printf("options\n");
+	printf("\t -h print this help\n");
+}
+
 int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 		       char *file_path, void setting_usage(void),
 		       const char *sysfs_param[])
@@ -346,6 +385,19 @@ int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 		goto write_file;
 
 	ptr = sysfs_param;
+
+	if (ptr[1]==NULL){
+
+		if (atoi(ptr[0]) <= atoi(argv[1]))
+			goto write_file;
+
+	}else{
+
+		if (atoi(ptr[0]) <= atoi(argv[1]) && atoi(ptr[1]) >= atoi(argv[1]))
+			goto write_file;
+
+	}
+
 	while (*ptr) {
 		if (strcmp(*ptr, argv[1]) == 0)
 			goto write_file;

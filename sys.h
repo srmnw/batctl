@@ -36,6 +36,10 @@
 #define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
 #define SYS_FRAG "fragmentation"
 #define SYS_AP_ISOLA "ap_isolation"
+#define SYS_NETWORK_CODING "network_coding"
+#define SYS_NC_MIN_TQ "nc_min_tq"
+#define SYS_NC_HOLD "nc_hold"
+#define SYS_NC_PURGE "nc_purge"
 
 enum gw_modes {
 	GW_MODE_OFF,
@@ -45,6 +49,8 @@ enum gw_modes {
 
 extern const char *sysfs_param_enable[];
 extern const char *sysfs_param_server[];
+extern const char *sysfs_param_range[];
+extern const char *sysfs_param_one_range[];
 
 void aggregation_usage(void);
 void bonding_usage(void);
@@ -54,6 +60,10 @@ void ap_isolation_usage(void);
 void gw_mode_usage(void);
 void vis_mode_usage(void);
 void orig_interval_usage(void);
+void network_coding_usage(void);
+void nc_min_tq_usage(void);
+void nc_hold_usage(void);
+void nc_purge_usage(void);
 int interface(char *mesh_iface, int argc, char **argv);
 int handle_loglevel(char *mesh_iface, int argc, char **argv);
 int handle_sys_setting(char *mesh_iface, int argc, char **argv,

@@ -65,6 +65,9 @@ void print_usage(void) {
 	printf(" \tap_isolation|ap            [0|1]             \tdisplay or modify the ap isolation mode setting\n");
 	printf("\n");
 	printf(" \tstatistics|s                                 \tprint mesh statistics\n");
+	printf("\n");
+        printf(" \tnetwork_coding|nc          [command]        \tdisplay the network coding commands\n");
+	printf("\n");
 	printf(" \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
 	printf(" \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
@@ -73,6 +76,16 @@ void print_usage(void) {
 	printf(" \t-m mesh interface (default 'bat0')\n");
 	printf(" \t-h print this help (or 'batctl <command> -h' for the command specific help)\n");
 	printf(" \t-v print version\n");
+}
+
+void print_usage_nc(void) {
+
+	printf("Usage: batctl nc [options] commands \n");
+	printf("commands:\n");
+	printf("\tstatus|st		[0|1]			\tdisplay or modify network coding status\n");
+	printf("\tmin_tq|mtq		[1-254]			\tdisplay or modify minimum tq value\n");
+	printf("\thold|hd			[>10]			\tdisplay or modify hold value\n");
+	printf("\tpurge|pg		[>10]			\tdisplay or modify purge value\n");
 }
 
 int main(int argc, char **argv)
@@ -223,7 +236,41 @@ int main(int argc, char **argv)
 
 		ret = bisect(argc - 1, argv + 1);
 
+	} else if ((strcmp(argv[1], "network_coding") == 0) || (strcmp(argv[1], "nc") == 0)) {
+
+		if (argc>2) {
+
+			if ((strcmp(argv[2], "status") == 0) || (strcmp(argv[2], "st") == 0)){
+
+				ret = handle_sys_setting(mesh_iface, argc - 2, argv + 2,
+					SYS_NETWORK_CODING, network_coding_usage, sysfs_param_enable);
+
+			} else if ((strcmp(argv[2], "min_tq") == 0) || (strcmp(argv[2], "mtq") == 0)) {
+
+				ret = handle_sys_setting(mesh_iface, argc - 2, argv + 2,
+					SYS_NC_MIN_TQ, nc_min_tq_usage, sysfs_param_range);
+
+			} else if ((strcmp(argv[2], "hold") == 0) || (strcmp(argv[2], "hd") == 0)) {
+
+				ret = handle_sys_setting(mesh_iface, argc - 2, argv + 2,
+					SYS_NC_HOLD, nc_hold_usage, sysfs_param_one_range);
+
+			} else if ((strcmp(argv[2], "purge") == 0) || (strcmp(argv[2], "pg") == 0)) {
+
+				ret = handle_sys_setting(mesh_iface, argc - 2, argv + 2,
+					SYS_NC_PURGE, nc_purge_usage, sysfs_param_one_range);
+
+			}
+
+		} else {
+
+			printf("Error - no command specified\n");
+			print_usage_nc();
+
+		     }
+
 	} else {
+
 		printf("Error - no command specified\n");
 		print_usage();
 	}
