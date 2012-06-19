@@ -195,6 +195,7 @@ static void log_level_usage(void)
 	printf(" \t routes  Messages related to route added / changed / deleted\n");
 	printf(" \t tt      Messages related to translation table operations\n");
 	printf(" \t bla     Messages related to bridge loop avoidance\n");
+	printf(" \t nc      Messages related to network coding\n");
 }
 
 int handle_loglevel(char *mesh_iface, int argc, char **argv)
@@ -235,6 +236,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level |= (1 << 2);
 			else if (strcmp(argv[i], "bla") == 0)
 				log_level |= (1 << 3);
+			else if (strcmp(argv[i], "nc") == 0)
+				log_level |= (1 << 4);
 			else {
 				log_level_usage();
 				goto out;
