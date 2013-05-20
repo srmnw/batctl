@@ -35,7 +35,7 @@
 #include "translate.h"
 #include "traceroute.h"
 #include "tcpdump.h"
-#include "bisect_iv.h"
+#include "bisect.h"
 #include "ioctl.h"
 #include "functions.h"
 #include <err.h>
