@@ -213,10 +213,11 @@ int bisect_routing_table_new(char *orig, char *next_hop, char *old_next_hop,
 		goto err;
 	}
 
-	if ((rt_flag == RT_FLAG_UPDATE) && (!old_next_hop)) {
+/*	if ((rt_flag == RT_FLAG_UPDATE) && (!old_next_hop)) {
 		fprintf(stderr, "Invalid old next hop found - skipping");
 		goto err;
 	}
+*/
 
 	next_hop_node = bisect_node_get(next_hop);
 	if ((rt_flag != RT_FLAG_DELETE) && (!next_hop_node))
@@ -450,8 +451,9 @@ int bisect_seqno_event_new(char *iface_addr, char *orig, char *prev_sender,
 		goto err;
 
 	prev_sender_node = bisect_node_get(prev_sender);
-	if (!prev_sender_node)
+/*	if (!prev_sender_node)
 		goto err;
+*/
 
 	orig_ev = bisect_orig_event_get_by_ptr(curr_bat_node, orig_node);
 	if (!orig_ev)
@@ -973,9 +975,10 @@ void bisect_print_rt(char *rt_orig, long long seqno_min, long long seqno_max,
 			printf(", neigh: %s",
 			       get_name_by_macstr(seqno_ev->neigh->name,
 						  read_opt));
-			printf(", prev_sender: %s)\n",
-			       get_name_by_macstr(seqno_ev->prev_sender->name,
-						  read_opt));
+			if (seqno_ev->prev_sender)
+				printf(", prev_sender: %s)\n",
+				       get_name_by_macstr(seqno_ev->prev_sender->name,
+							  read_opt));
 		} else {
 			printf("rt change triggered by originator timeout: \n");
 		}
@@ -1029,9 +1032,10 @@ bisect_seqno_trace_print_neigh(struct bisect_seqno_trace_neigh *seqno_trace_neig
 	printf(", neigh: %s",
 	       get_name_by_macstr(seqno_trace_neigh->seqno_ev->neigh->name,
 				  read_opt));
-	printf(", prev_sender: %s]",
-	       get_name_by_macstr(seqno_trace_neigh->seqno_ev->prev_sender->name,
-				  read_opt));
+	if (seqno_trace_neigh->seqno_ev->prev_sender)
+		printf(", prev_sender: %s]",
+		       get_name_by_macstr(seqno_trace_neigh->seqno_ev->prev_sender->name,
+					  read_opt));
 
 	if ((seqno_ev_parent) &&
 	    (seqno_trace_neigh->seqno_ev->metric > seqno_ev_parent->metric))
