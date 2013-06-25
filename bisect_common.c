@@ -1426,8 +1426,10 @@ out:
 int bisect_hash_init()
 {
 	node_hash = hash_new(64, bisect_compare_name, bisect_choose_name);
+	if (node_hash == NULL)
+		return -1;
 
-	return node_hash != NULL;
+	return 0;
 }
 
 void bisect_hash_free()

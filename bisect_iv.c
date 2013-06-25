@@ -275,7 +275,7 @@ int bisect_iv(int argc, char **argv)
 		goto err;
 	}
 
-	if (bisect_hash_init()) {
+	if (bisect_hash_init() < 0) {
 		fprintf(stderr, "Error - could not create node hash table\n");
 		goto err;
 	}
