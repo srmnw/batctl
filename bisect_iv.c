@@ -51,8 +51,8 @@ static int bisect_iv_parse_log_file(char *file_path)
 	FILE *fd;
 	char line_buff[MAX_LINE], *start_ptr, *start_ptr_safe, *tok_ptr;
 	char *neigh, *iface_addr, *orig, *prev_sender, rt_flag;
-	int line_count = 0, tq, ttl, i, res, max, len;
-	long long seqno;
+	int line_count = 0, ttl, i, res, max, len;
+	uint64_t seqno, tq;
 
 	fd = fopen(file_path, "r");
 

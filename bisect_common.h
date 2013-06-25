@@ -73,7 +73,7 @@ struct bisect_seqno_ev {
 	struct bisect_bat_node *neigh;
 	struct bisect_bat_node *prev_sender;
 	long long seqno;
-	int tq;
+	long long metric;
 	int ttl;
 	struct bisect_rt_hist *rt_hist;
 };
@@ -93,7 +93,8 @@ struct bisect_seqno_trace {
 };
 
 int bisect_seqno_event_new(char *iface_addr, char *orig, char *prev_sender,
-			   char *neigh, long long seqno, int tq, int ttl);
+			   char *neigh, long long seqno, long long metric,
+			   int ttl);
 int bisect_routing_table_new(char *orig, char *next_hop, char *old_next_hop,
 			     char rt_flag);
 int bisect_get_orig_addr(char *orig_name, char *orig_addr);

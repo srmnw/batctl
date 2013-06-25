@@ -323,7 +323,7 @@ int bisect_routing_table_new(char *orig, char *next_hop, char *old_next_hop,
 			seqno_ev->neigh = NULL;
 			seqno_ev->prev_sender = NULL;
 			seqno_ev->seqno = -1;
-			seqno_ev->tq = -1;
+			seqno_ev->metric = -1;
 			seqno_ev->ttl = -1;
 			seqno_ev->rt_hist = NULL;
 			list_add_tail(&seqno_ev->list, &orig_ev->ev_list);
@@ -399,7 +399,8 @@ err:
 }
 
 int bisect_seqno_event_new(char *iface_addr, char *orig, char *prev_sender,
-			   char *neigh, long long seqno, int tq, int ttl)
+			   char *neigh, long long seqno, long long metric,
+			   int ttl)
 {
 	struct bisect_bat_node *orig_node, *neigh_node, *prev_sender_node;
 	struct bisect_orig_ev *orig_ev;
@@ -426,8 +427,8 @@ int bisect_seqno_event_new(char *iface_addr, char *orig, char *prev_sender,
 		goto err;
 	}
 
-	if ((tq < 0) || (tq > UINT8_MAX)) {
-		fprintf(stderr, "Invalid tq value found (%i) - skipping", tq);
+	if (metric < 0) {
+		fprintf(stderr, "Invalid metric value found (%lli) - skipping", metric);
 		goto err;
 	}
 
@@ -468,7 +469,7 @@ int bisect_seqno_event_new(char *iface_addr, char *orig, char *prev_sender,
 	seqno_ev->neigh = neigh_node;
 	seqno_ev->prev_sender = prev_sender_node;
 	seqno_ev->seqno = seqno;
-	seqno_ev->tq = tq;
+	seqno_ev->metric = metric;
 	seqno_ev->ttl = ttl;
 	seqno_ev->rt_hist = NULL;
 	list_add_tail(&seqno_ev->list, &orig_ev->ev_list);
@@ -964,10 +965,10 @@ void bisect_print_rt(char *rt_orig, long long seqno_min, long long seqno_max,
 			continue;
 
 		if (seqno_ev->seqno > -1) {
-			printf("rt change triggered by OGM from: %s (tq: %i, ttl: %i, seqno %lli",
+			printf("rt change triggered by OGM from: %s (metric: %lli, ttl: %i, seqno %lli",
 			       get_name_by_macstr(seqno_ev->orig->name,
 						  read_opt),
-			       seqno_ev->tq, seqno_ev->ttl,
+			       seqno_ev->metric, seqno_ev->ttl,
 			       seqno_ev->seqno);
 			printf(", neigh: %s",
 			       get_name_by_macstr(seqno_ev->neigh->name,
@@ -1019,10 +1020,10 @@ bisect_seqno_trace_print_neigh(struct bisect_seqno_trace_neigh *seqno_trace_neig
 	char new_head[MAX_LINE];
 	int i;
 
-	printf("%s%s- %s [tq: %i, ttl: %i", head,
+	printf("%s%s- %s [metric: %lli, ttl: %i", head,
                (strlen(head) == 1 ? "" : num_sisters == 0 ? "\\" : "|"),
                get_name_by_macstr(seqno_trace_neigh->bat_node->name, read_opt),
-               seqno_trace_neigh->seqno_ev->tq,
+               seqno_trace_neigh->seqno_ev->metric,
 	       seqno_trace_neigh->seqno_ev->ttl);
 
 	printf(", neigh: %s",
@@ -1033,7 +1034,7 @@ bisect_seqno_trace_print_neigh(struct bisect_seqno_trace_neigh *seqno_trace_neig
 				  read_opt));
 
 	if ((seqno_ev_parent) &&
-	    (seqno_trace_neigh->seqno_ev->tq > seqno_ev_parent->tq))
+	    (seqno_trace_neigh->seqno_ev->metric > seqno_ev_parent->metric))
 		printf("  TQ UP!\n");
 	else
 		printf("\n");
