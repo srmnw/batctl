@@ -87,6 +87,7 @@ void print_usage(void)
 	fprintf(stderr, " \ttranslate|t                <destination>     \ttranslate a destination to the originator responsible for it\n");
 #ifdef BATCTL_BISECT
 	fprintf(stderr, " \tbisect_iv                  <file1> .. <fileN>\tanalyze given batman iv log files for routing stability\n");
+	fprintf(stderr, " \tbisect_v                   <file1> .. <fileN>\tanalyze fiven batman v log files for routing stability\n");
 #endif
 }
 
@@ -186,6 +187,10 @@ int main(int argc, char **argv)
 	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {
 
 		ret = bisect_iv(argc - 1, argv + 1);
+
+	} else if ((strcmp(argv[1], "bisect_v") == 0)) {
+
+		ret = bisect_v(argc - 1, argv + 1);
 #endif
 
 	} else {
