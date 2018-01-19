@@ -30,6 +30,7 @@
 #include "sys.h"
 #include "debug.h"
 #include "interface.h"
+#include "peerfilter.h"
 #include "ping.h"
 #include "translate.h"
 #include "traceroute.h"
@@ -81,6 +82,7 @@ static void print_usage(void)
 
 	fprintf(stderr, "\n");
 	fprintf(stderr, " \tstatistics|s                                 \tprint mesh statistics\n");
+	fprintf(stderr, " \tpeerfilter|pr              [add|del|playdead]\tdisplay/modify the kernel peer filter\n");
 	fprintf(stderr, " \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
 	fprintf(stderr, " \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
 	fprintf(stderr, " \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
@@ -154,6 +156,10 @@ int main(int argc, char **argv)
 	} else if (check_mesh_iface(mesh_iface) < 0) {
 		fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
 		exit(EXIT_FAILURE);
+	} else if ((strcmp(argv[1], "peerfilter") == 0) || (strcmp(argv[1], "pr") == 0)) {
+
+		ret = peerfilter(mesh_iface, argc - 1, argv + 1);
+
 	} else if ((strcmp(argv[1], "ping") == 0) || (strcmp(argv[1], "p") == 0)) {
 
 		ret = ping(mesh_iface, argc - 1, argv + 1);

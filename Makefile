@@ -35,6 +35,7 @@ OBJ += interface.o
 OBJ += ioctl.o
 OBJ += main.o
 OBJ += netlink.o
+OBJ += peerfilter.o
 OBJ += ping.o
 OBJ += sys.o
 OBJ += tcpdump.o
