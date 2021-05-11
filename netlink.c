@@ -459,60 +459,46 @@ static int info_callback(struct nl_msg *msg, void *arg)
 			opts->remaining_header = NULL;
 	}
 
-	return NL_STOP;
+	return NL_OK;
 }
 
-char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
+char *netlink_get_info(struct state *state, uint8_t nl_cmd, const char *header)
 {
-	struct nl_sock *sock;
 	struct nl_msg *msg;
 	struct nl_cb *cb;
-	int family;
 	struct print_opts opts = {
 		.read_opt = 0,
 		.nl_cmd = nl_cmd,
 		.remaining_header = NULL,
 		.static_header = header,
 	};
-
-	sock = nl_socket_alloc();
-	if (!sock)
-		return NULL;
-
-	genl_connect(sock);
-
-	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
-	if (family < 0) {
-		nl_socket_free(sock);
-		return NULL;
-	}
+	int ret;
 
 	msg = nlmsg_alloc();
-	if (!msg) {
-		nl_socket_free(sock);
+	if (!msg)
 		return NULL;
-	}
 
-	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, 0,
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family, 0, 0,
 		    BATADV_CMD_GET_MESH_INFO, 1);
 
-	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, state->mesh_ifindex);
 
-	nl_send_auto_complete(sock, msg);
+	nl_send_auto_complete(state->sock, msg);
 
 	nlmsg_free(msg);
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
 	if (!cb)
-		goto err_free_sock;
+		return NULL;
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, info_callback, &opts);
 	nl_cb_err(cb, NL_CB_CUSTOM, netlink_print_error, NULL);
 
-	nl_recvmsgs(sock, cb);
+	ret = nl_recvmsgs(state->sock, cb);
+	if (ret < 0)
+		return opts.remaining_header;
 
-err_free_sock:
-	nl_socket_free(sock);
+	nl_wait_for_ack(state->sock);
 
 	return opts.remaining_header;
 }
@@ -578,7 +564,7 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 			printf("\033[2J\033[0;0f");
 
 		if (!(read_opt & SKIP_HEADER))
-			opts.remaining_header = netlink_get_info(state->mesh_ifindex,
+			opts.remaining_header = netlink_get_info(state,
 								 nl_cmd,
 								 header);
 
@@ -637,46 +623,20 @@ static int nlquery_stop_cb(struct nl_msg *msg, void *arg)
 	return NL_STOP;
 }
 
-static int netlink_query_common(const char *mesh_iface, uint8_t nl_cmd,
+static int netlink_query_common(struct state *state,
+				unsigned int mesh_ifindex, uint8_t nl_cmd,
 				nl_recvmsg_msg_cb_t callback, int flags,
 				struct nlquery_opts *query_opts)
 {
-	struct nl_sock *sock;
 	struct nl_msg *msg;
 	struct nl_cb *cb;
-	int ifindex;
-	int family;
 	int ret;
 
 	query_opts->err = 0;
 
-	sock = nl_socket_alloc();
-	if (!sock)
-		return -ENOMEM;
-
-	ret = genl_connect(sock);
-	if (ret < 0) {
-		query_opts->err = ret;
-		goto err_free_sock;
-	}
-
-	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
-	if (family < 0) {
-		query_opts->err = -EOPNOTSUPP;
-		goto err_free_sock;
-	}
-
-	ifindex = if_nametoindex(mesh_iface);
-	if (!ifindex) {
-		query_opts->err = -ENODEV;
-		goto err_free_sock;
-	}
-
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
-	if (!cb) {
-		query_opts->err = -ENOMEM;
-		goto err_free_sock;
-	}
+	if (!cb)
+		return -ENOMEM;
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, callback, query_opts);
 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, nlquery_stop_cb, query_opts);
@@ -688,19 +648,24 @@ static int netlink_query_common(const char *mesh_iface, uint8_t nl_cmd,
 		goto err_free_cb;
 	}
 
-	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, flags,
-		    nl_cmd, 1);
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family, 0,
+		    flags, nl_cmd, 1);
 
-	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
-	nl_send_auto_complete(sock, msg);
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, mesh_ifindex);
+	nl_send_auto_complete(state->sock, msg);
 	nlmsg_free(msg);
 
-	nl_recvmsgs(sock, cb);
+	ret = nl_recvmsgs(state->sock, cb);
+	if (ret < 0) {
+		query_opts->err = ret;
+		goto err_free_cb;
+	}
+
+	if (!(flags & NLM_F_DUMP))
+		nl_wait_for_ack(state->sock);
 
 err_free_cb:
 	nl_cb_put(cb);
-err_free_sock:
-	nl_socket_free(sock);
 
 	return query_opts->err;
 }
@@ -712,7 +677,7 @@ static const int translate_mac_netlink_mandatory[] = {
 
 struct translate_mac_netlink_opts {
 	struct ether_addr mac;
-	bool found;
+	uint8_t found:1;
 	struct nlquery_opts query_opts;
 };
 
@@ -759,10 +724,10 @@ static int translate_mac_netlink_cb(struct nl_msg *msg, void *arg)
 	opts->found = true;
 	opts->query_opts.err = 0;
 
-	return NL_STOP;
+	return NL_OK;
 }
 
-int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
+int translate_mac_netlink(struct state *state, const struct ether_addr *mac,
 			  struct ether_addr *mac_out)
 {
 	struct translate_mac_netlink_opts opts = {
@@ -775,7 +740,7 @@ int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
 
 	memcpy(&opts.mac, mac, ETH_ALEN);
 
-	ret = netlink_query_common(mesh_iface,
+	ret = netlink_query_common(state, state->mesh_ifindex,
 				   BATADV_CMD_GET_TRANSTABLE_GLOBAL,
 			           translate_mac_netlink_cb, NLM_F_DUMP,
 				   &opts.query_opts);
@@ -800,7 +765,7 @@ struct get_nexthop_netlink_opts {
 	struct ether_addr mac;
 	uint8_t *nexthop;
 	char *ifname;
-	bool found;
+	uint8_t found:1;
 	struct nlquery_opts query_opts;
 };
 
@@ -862,10 +827,10 @@ static int get_nexthop_netlink_cb(struct nl_msg *msg, void *arg)
 	opts->found = true;
 	opts->query_opts.err = 0;
 
-	return NL_STOP;
+	return NL_OK;
 }
 
-int get_nexthop_netlink(const char *mesh_iface, const struct ether_addr *mac,
+int get_nexthop_netlink(struct state *state, const struct ether_addr *mac,
 			uint8_t *nexthop, char *ifname)
 {
 	struct get_nexthop_netlink_opts opts = {
@@ -881,7 +846,8 @@ int get_nexthop_netlink(const char *mesh_iface, const struct ether_addr *mac,
 	opts.nexthop = nexthop;
 	opts.ifname = ifname;
 
-	ret = netlink_query_common(mesh_iface,  BATADV_CMD_GET_ORIGINATORS,
+	ret = netlink_query_common(state, state->mesh_ifindex,
+				   BATADV_CMD_GET_ORIGINATORS,
 			           get_nexthop_netlink_cb, NLM_F_DUMP,
 				   &opts.query_opts);
 	if (ret < 0)
@@ -899,7 +865,7 @@ static const int get_primarymac_netlink_mandatory[] = {
 
 struct get_primarymac_netlink_opts {
 	uint8_t *primarymac;
-	bool found;
+	uint8_t found:1;
 	struct nlquery_opts query_opts;
 };
 
@@ -940,10 +906,10 @@ static int get_primarymac_netlink_cb(struct nl_msg *msg, void *arg)
 	opts->found = true;
 	opts->query_opts.err = 0;
 
-	return NL_STOP;
+	return NL_OK;
 }
 
-int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac)
+int get_primarymac_netlink(struct state *state, uint8_t *primarymac)
 {
 	struct get_primarymac_netlink_opts opts = {
 		.primarymac = 0,
@@ -956,7 +922,8 @@ int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac)
 
 	opts.primarymac = primarymac;
 
-	ret = netlink_query_common(mesh_iface, BATADV_CMD_GET_MESH_INFO,
+	ret = netlink_query_common(state, state->mesh_ifindex,
+				   BATADV_CMD_GET_MESH_INFO,
 			           get_primarymac_netlink_cb, 0,
 				   &opts.query_opts);
 	if (ret < 0)
@@ -971,7 +938,7 @@ int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac)
 struct get_algoname_netlink_opts {
 	char *algoname;
 	size_t algoname_len;
-	bool found;
+	uint8_t found:1;
 	struct nlquery_opts query_opts;
 };
 
@@ -1016,11 +983,11 @@ static int get_algoname_netlink_cb(struct nl_msg *msg, void *arg)
 	opts->found = true;
 	opts->query_opts.err = 0;
 
-	return NL_STOP;
+	return NL_OK;
 }
 
-int get_algoname_netlink(const char *mesh_iface, char *algoname,
-			 size_t algoname_len)
+int get_algoname_netlink(struct state *state, unsigned int mesh_ifindex,
+			 char *algoname, size_t algoname_len)
 {
 	struct get_algoname_netlink_opts opts = {
 		.algoname = algoname,
@@ -1032,7 +999,7 @@ int get_algoname_netlink(const char *mesh_iface, char *algoname,
 	};
 	int ret;
 
-	ret = netlink_query_common(mesh_iface, BATADV_CMD_GET_MESH,
+	ret = netlink_query_common(state, mesh_ifindex, BATADV_CMD_GET_MESH,
 			           get_algoname_netlink_cb, 0,
 				   &opts.query_opts);
 	if (ret < 0)
