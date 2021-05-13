@@ -371,6 +371,21 @@ Example::
   [{"hard_ifindex":7,"orig_address":"fe:fe:00:00:01:01","best":true,"last_seen_msecs":700,"neigh_address":"fe:fe:00:00:02:01","tq":119},{"hard_ifindex":2,"orig_address":"fe:fe:00:00:03:01","best":true,"last_seen_msecs":1040,"neigh_address":"fe:fe:00:00:02:01","tq":116},{"hard_ifindex":7,"orig_address":"fe:fe:00:00:04:01","best":true,"last_seen_msecs":700,"neigh_address":"fe:fe:00:00:02:01","tq":119},{"hard_ifindex":2,"orig_address":"fe:fe:00:00:05:01","best":true,"last_seen_msecs":270,"neigh_address":"fe:fe:00:00:02:01","tq":140},{"hard_ifindex":2,"orig_address":"fe:fe:00:00:06:01","best":true,"last_seen_msecs":770,"neigh_address":"fe:fe:00:00:02:01","tq":91}]
 
 
+batctl neighbors_json
+=====================
+
+display the Neighbors JSON (analogue of the neighbors table)
+
+Usage::
+
+  batctl neighbors_json
+
+Example::
+
+  $ batctl neighbors_json|nj
+  [{"hard_ifindex":2,"last_seen_msecs":650,"neigh_address":"fe:fe:00:00:01:01"},{"hard_ifindex":2,"last_seen_msecs":650,"neigh_address":"fe:fe:00:00:01:02"}]
+
+
 batctl interface
 ================
 
