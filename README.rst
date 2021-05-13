@@ -651,6 +651,21 @@ W/Wireless:
 If any of the flags is not enabled, a '.' will substitute its symbol.
 
 
+batctl translocal_json
+======================
+
+display the local translation JSON (analogue of the translocal table)
+
+Usage::
+
+  batctl translocal_json|tlj
+
+Example::
+
+  $ batctl translocal_json
+  [{"tt_address":"33:33:00:00:00:01","crc32":2147984693,"tt_vid":0,"tt_flags":256},{"tt_address":"33:33:00:00:00:01","crc32":2147984693,"tt_vid":0,"tt_flags":256},{"tt_address":"11:11:00:00:00:03","crc32":2147984693,"tt_vid":0,"tt_flags":256}]
+
+
 batctl transglobal
 ==================
 

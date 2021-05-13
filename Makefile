@@ -75,6 +75,7 @@ $(eval $(call add_command,transglobal,y))
 $(eval $(call add_command,transglobal_json,y))
 $(eval $(call add_command,translate,y))
 $(eval $(call add_command,translocal,y))
+$(eval $(call add_command,translocal_json,y))
 
 MANPAGE = man/batctl.8
 
