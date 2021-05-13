@@ -29,6 +29,11 @@ struct nlquery_opts {
 	int err;
 };
 
+struct nla_policy_json {
+	const char *name;
+	void (*cb)(struct nlattr *attrs[], int idx);
+};
+
 struct ether_addr;
 
 int netlink_create(struct state *state);
@@ -44,6 +49,7 @@ int get_algoname_netlink(struct state *state, unsigned int mesh_ifindex,
 			 char *algoname, size_t algoname_len);
 
 extern struct nla_policy batadv_netlink_policy[];
+extern struct nla_policy_json batadv_netlink_policy_json[];
 
 int missing_mandatory_attrs(struct nlattr *attrs[], const int mandatory[],
 			    int num);
