@@ -356,6 +356,21 @@ Example::
   fe:f0:00:00:01:01    0.510s   (255) fe:f0:00:00:01:01 [      eth0]: fe:f1:00:00:01:01 (240) fe:f0:00:00:01:01 (255)
 
 
+batctl originators_json
+=======================
+
+Check the Originators JSON (it's a JSON analogue of the Originators table)
+
+Usage::
+
+  batctl originators_json|oj
+
+Example::
+
+  $ batctl originators_json
+  [{"hard_ifindex":7,"orig_address":"fe:fe:00:00:01:01","best":true,"last_seen_msecs":700,"neigh_address":"fe:fe:00:00:02:01","tq":119},{"hard_ifindex":2,"orig_address":"fe:fe:00:00:03:01","best":true,"last_seen_msecs":1040,"neigh_address":"fe:fe:00:00:02:01","tq":116},{"hard_ifindex":7,"orig_address":"fe:fe:00:00:04:01","best":true,"last_seen_msecs":700,"neigh_address":"fe:fe:00:00:02:01","tq":119},{"hard_ifindex":2,"orig_address":"fe:fe:00:00:05:01","best":true,"last_seen_msecs":270,"neigh_address":"fe:fe:00:00:02:01","tq":140},{"hard_ifindex":2,"orig_address":"fe:fe:00:00:06:01","best":true,"last_seen_msecs":770,"neigh_address":"fe:fe:00:00:02:01","tq":91}]
+
+
 batctl interface
 ================
 
