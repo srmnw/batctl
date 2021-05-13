@@ -27,11 +27,11 @@
 .SH NAME
 batctl \- B.A.T.M.A.N. advanced control and management tool
 .SH SYNOPSIS
-.B batctl [\fIoptions\fP]\ \fIcommand\fP|\fIdebug\ table\fP\ [\fIparameters\fP]
+.B batctl [\fIoptions\fP]\ \fIcommand\fP|\fIdebug\ table\fP|\fIdebug\ JSON\fP\ [\fIparameters\fP]
 .br
 .SH DESCRIPTION
 batctl offers a convenient way to configure the batman\-adv kernel module as well as displaying debug information
-such as originator tables, translation tables and the debug log. In combination with a bat\-hosts file batctl allows
+such as originator tables/JSON, translation tables/JSON and the debug log. In combination with a bat\-hosts file batctl allows
 the use of host names instead of MAC addresses.
 .PP
 B.A.T.M.A.N. advanced operates on layer 2. Thus all hosts participating in the virtual switched network are transparently
@@ -292,6 +292,17 @@ List of debug tables:
 .RS 10
 \- mcast_flags|mf (compile time option)
 .RE
+.RE
+.br
+.br
+.PP
+.I \fBdebug JSONs:
+.IP
+The batman-adv kernel module comes with a variety of debug JSONs containing various information about the state of the mesh
+seen by each individual node.
+
+.RS 7
+List of debug JSONs:
 .RE
 .br
 .IP "[\fBmeshif <netdev>\fP] \fBtranslate\fP|\fBt\fP \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"

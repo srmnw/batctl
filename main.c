@@ -43,6 +43,10 @@ static void print_usage(void)
 			.label = "debug tables:                                   \tdisplay the corresponding debug table\n",
 			.types = BIT(DEBUGTABLE),
 		},
+		{
+			.label = "debug JSONs:                                   \tdisplay the corresponding debug JSON\n",
+			.types = BIT(DEBUGJSON),
+		},
 	};
 	const char *default_prefixes[] = {
 		"",
@@ -67,9 +71,9 @@ static void print_usage(void)
 	char buf[64];
 	size_t i;
 
-	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
+	fprintf(stderr, "Usage: batctl [options] command|debug table|debug json [parameters]\n");
 	fprintf(stderr, "options:\n");
-	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table> -h' for the parameter help)\n");
+	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table|debug json> -h' for the parameter help)\n");
 	fprintf(stderr, " \t-v print version\n");
 
 	for (i = 0; i < sizeof(type) / sizeof(*type); i++) {
@@ -87,6 +91,7 @@ static void print_usage(void)
 				continue;
 
 			switch (cmd->type) {
+			case DEBUGJSON:
 			case DEBUGTABLE:
 			case SUBCOMMAND_MIF:
 				prefixes = meshif_prefixes;
@@ -167,7 +172,8 @@ static const struct command *find_command(struct state *state, const char *name)
 		/* fall through */
 	case SP_MESHIF:
 		types |= BIT(SUBCOMMAND_MIF) |
-			 BIT(DEBUGTABLE);
+			 BIT(DEBUGTABLE)     |
+			 BIT(DEBUGJSON);
 		break;
 	case SP_VLAN:
 		types = BIT(SUBCOMMAND_VID);
@@ -380,7 +386,7 @@ int main(int argc, char **argv)
 	cmd = find_command(&state, argv[0]);
 	if (!cmd) {
 		fprintf(stderr,
-			"Error - no valid command or debug table specified: %s\n",
+			"Error - no valid command or debug table/JSON specified: %s\n",
 			argv[0]);
 		goto err;
 	}
