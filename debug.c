@@ -42,6 +42,14 @@ static void debug_table_usage(struct state *state)
 		fprintf(stderr, " \t -m print multicast mac addresses only\n");
 }
 
+static void debug_json_usage(struct state *state)
+{
+	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters]\n",
+		state->cmd->name, state->cmd->abbr);
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -h print this help\n");
+}
+
 int handle_debug_table(struct state *state, int argc, char **argv)
 {
 	struct debug_table_data *debug_table = state->cmd->arg;
@@ -146,5 +154,26 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 
 	err = debug_table->netlink_fn(state , orig_iface, read_opt,
 				      orig_timeout, watch_interval);
+	return err;
+}
+
+int handle_debug_json(struct state *state, int argc, char **argv)
+{
+	struct debug_json_data *debug_json = state->cmd->arg;
+	int optchar;
+	int err;
+
+	while ((optchar = getopt(argc, argv, "h")) != -1) {
+		switch (optchar) {
+		case 'h':
+			debug_json_usage(state);
+			return EXIT_SUCCESS;
+		}
+	}
+
+	check_root_or_die("batctl");
+
+	err = debug_json->netlink_fn(state);
+
 	return err;
 }

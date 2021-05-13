@@ -21,6 +21,11 @@ struct debug_table_data {
 	unsigned int option_orig_iface:1;
 };
 
+struct debug_json_data {
+	int (*netlink_fn)(struct state *state);
+};
+
 int handle_debug_table(struct state *state, int argc, char **argv);
+int handle_debug_json(struct state *state, int argc, char **argv);
 
 #endif
