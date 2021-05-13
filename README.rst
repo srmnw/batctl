@@ -386,6 +386,21 @@ Example::
   [{"hard_ifindex":2,"last_seen_msecs":650,"neigh_address":"fe:fe:00:00:01:01"},{"hard_ifindex":2,"last_seen_msecs":650,"neigh_address":"fe:fe:00:00:01:02"}]
 
 
+batctl meshinfo_json
+====================
+
+display batman-adv configuration and information JSON
+
+Usage::
+
+  batctl meshinfo_json|mij
+
+Example::
+
+  $ batctl meshinfo_json
+
+
+
 batctl interface
 ================
 
