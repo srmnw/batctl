@@ -687,6 +687,21 @@ Flags that mean:
 If any of the flags is not enabled, a '.' will substitute its symbol.
 
 
+batctl transglobal_json
+=======================
+
+display the global translation JSON (analogue of the transglobal table)
+
+Usage::
+
+  batctl transglobal_json|tgj
+
+Example::
+
+  $ batctl translglobal_json
+  [{"orig_address":"fe:fe:00:00:01:01","tt_address":"33:33:00:00:00:01","tt_ttvn":3,"last_ttvn":3,"crc32":1916279217,"tt_vid":0,"tt_flags":0,"best":true},{"orig_address":"fe:fe:00:00:01:02","tt_address":"33:33:00:00:00:02","tt_ttvn":3,"last_ttvn":3,"crc32":1916279217,"tt_vid":0,"tt_flags":0}]
+
+
 batctl dat_cache
 =================
 
